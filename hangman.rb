@@ -1,6 +1,29 @@
 class Hangman
     def initialize
+        @guesses_remaining = 10
+        @players = Array.new(2) {|index| self.create_player}
+        # TODO: check they don't have the same role
+    end
+
+    def create_player
+        puts "What's your name? (Enter 'CPU' for CPU player)"
+        name = gets.chomp.upcase
+        unless name == "CPU"
+            name = name.capitalize
+        end
         
+        puts "Will you guess or set the word?"
+        role = gets.chomp.downcase
+        if role != "guess" && role != "set"
+            puts "***Oops, you made a typo***"
+            return self.create_player
+        end
+
+        if name == "CPU"
+            Computer.new(self, role)
+        else
+            Human.new(name, role)
+        end
     end
 
     # get guess
@@ -31,20 +54,23 @@ end
 
 
 class Human
-    def initialize
-        
+    def initialize(name, role)
+        @name = name
+        @role = role
     end
 end
 
 
 class Computer
-    def initialize
+    def initialize(parent, role)
         # load the dictionary
         if File.exist?("google-10000-english-no-swears.txt")
             @DICTIONARY = File.open("google-10000-english-no-swears.txt").readlines
         else
             puts "Dictionary is missing"
         end
+        @parent = parent
+        @role = role
     end
 
     def choose_word
@@ -60,3 +86,5 @@ class Computer
     # if you want to be a giant nerd have it then check what words from its dictionary abre possible, then the most common letter from those words in the empty space
 
 end
+
+game = Hangman.new
