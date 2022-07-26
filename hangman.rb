@@ -1,8 +1,10 @@
 class Hangman
     def initialize
         @guesses_remaining = 10
-        @players = Array.new(2) {|index| self.create_player}
-        self.same_role?
+        @setter = nil
+        @guesser = nil
+        2.times {|i| self.create_player}
+        @word = self.set_word
     end
 
     def create_player
@@ -17,27 +19,19 @@ class Hangman
         end
 
         if name == "Cpu"
-            Computer.new(self, role)
+            player = Computer.new(self)
         else
-            Human.new(name, role)
+            player = Human.new(name)
         end
-    end
 
-    def same_role?
-        if @players[0].role == @players[1].role
-            puts "***You can't have the same role; #{@players[0].name} choose your role again***"
-            @players[0].role = gets.chomp.downcase
-            puts "***You can't have the same role; #{@players[1].name} choose your role again***"
-            @players[0].role = gets.chomp.downcase
-            unless @players.all? {|player| player.role == "guess" || player.role == "guess"}
-                self.same_role?
-            end
-            self.same_role?
-        end
-    end
-
-    def role?
-        
+       if role == "guess" && @guesser == nil
+            @guesser = player
+       elsif role == "set" && @setter == nil
+            @setter = player
+       else
+            puts "***You can't have the same role; #{name} choose your role again***"
+            self.create_player
+       end
     end
 
     def set_word
@@ -76,24 +70,23 @@ end
 
 class Human
     
-    attr_accessor :role, :name
+    attr_accessor :name
 
     private
 
-    def initialize(name, role)
+    def initialize(name)
         @name = name
-        @role = role
     end
 end
 
 
 class Computer
     
-    attr_accessor :role, :name
+    attr_accessor :name
 
     private
     
-    def initialize(parent, role)
+    def initialize(parent)
         # load the dictionary
         if File.exist?("google-10000-english-no-swears.txt")
             @DICTIONARY = File.open("google-10000-english-no-swears.txt").readlines
@@ -101,7 +94,6 @@ class Computer
             puts "Dictionary is missing"
         end
         @parent = parent
-        @role = role
         @name = "CPU"
     end
 
