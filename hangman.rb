@@ -1,10 +1,15 @@
 class Hangman
+
+    private
+    
     def initialize
         @guesses_remaining = 10
         @setter = nil
         @guesser = nil
         2.times {|i| self.create_player}
-        @word = self.set_word
+        @word = @setter.set_word
+        @hint = Array.new(@word.length, " _ ")
+        self.guess
     end
 
     def create_player
@@ -34,17 +39,14 @@ class Hangman
        end
     end
 
-    def set_word
-        # get word
-        # create an array of equal length to the word, default value "_"
-
-        # print that array and ask the player for a guess
-
-            # also need to print some way of tracking guesses remaining and previously guessed letters
-    end
-
     def guess
-        # get guess
+        # print that array and ask the player for a guess
+        puts "Hint: #{@hint.join}"
+        puts "#{@guesser.name}, guess a letter or word"
+        guess = gets.chomp.downcase
+            # also need to print some way of tracking guesses remaining and previously guessed letters
+
+            # need different ways of handling word guesses and letter guesses# get guess
 
         # if the player enters "save" as their guess, save gamestate info to a file
             # guesses remaining, current revealed letters, previous guesses, player name
@@ -72,6 +74,13 @@ class Human
     
     attr_accessor :name
 
+    def set_word
+        puts "#{@name}, what's your word?"
+        word = gets.chomp.downcase
+        system("clear") || system("cls")
+        word
+    end
+
     private
 
     def initialize(name)
@@ -83,6 +92,11 @@ end
 class Computer
     
     attr_accessor :name
+
+    def set_word
+        valid_words = @DICTIONARY.select {|word| word.length > 4 && word.length < 13}
+        valid_words[Random.rand(valid_words.length)].chomp.downcase
+    end
 
     private
     
@@ -97,11 +111,7 @@ class Computer
         @name = "CPU"
     end
 
-    def choose_word
-        valid_words = @DICTIONARY.select {|word| word.length > 4 && word.length < 13}
-        word = valid_words[Random.rand(valid_words.length)]
-        puts word
-    end
+
 
     # let the CPU guess a word you set
 
