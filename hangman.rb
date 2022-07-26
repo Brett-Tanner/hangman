@@ -24,7 +24,7 @@ class Hangman
         end
 
         if name == "Cpu"
-            player = Computer.new(self)
+            player = Computer.new
         else
             player = Human.new(name)
         end
@@ -40,85 +40,137 @@ class Hangman
     end
 
     def guess
-        # print that array and ask the player for a guess
         puts "Hint: #{@hint.join}"
-        puts "#{@guesser.name}, guess a letter or word"
-        guess = gets.chomp.downcase
-            # also need to print some way of tracking guesses remaining and previously guessed letters
+        
+        guess = @guesser.guess
 
-            # need different ways of handling word guesses and letter guesses# get guess
+        if @guesser.previous_guesses.any?(guess)
+            puts "You've already guessed that!"
+            return self.guess
+        elsif guess.length > 1
+            self.word_guess(guess)
+        else
+            self.letter_guess(guess)
+        end
 
-        # if the player enters "save" as their guess, save gamestate info to a file
+
+        # TODO: if the player enters "save" as their guess, save gamestate info to a file
             # guesses remaining, current revealed letters, previous guesses, player name
 
-        # compare it to the randomly chosen word (if it was already guessed, tell them and ask again)
+        @guesses_remaining -= 1
+        puts "#{@guesses_remaining} guesses remaining"
+        if @guesses_remaining <= 0 
+            puts "Bad luck #{@guesser.name}, the word was #{@word.join}"
+            self.end_game 
+        elsif @word == @hint
+            "Congratulations #{@setter.name}, you win!"
+            return self.end_game
+        end
+        @setter.points += 1
+        self.guess
+    end
 
-        # reveal all letters that match in the guess array
+    def word_guess(guess)
+        if guess == @word.join
+            puts "Congratulations #{@setter.name}, you win!"
+            return self.end_game
+        else
+            puts "Sorry #{@guesser.name}, your guess was incorrect"
+            return self.guess
+        end
+        @guesser.previous_guesses.push(guess)
+    end
 
-        # when guesses exceed the allowed amount, end the game and reveal the word
-
-        # print, then ask for another guess
+    def letter_guess(guess)
+        if @word.any?(guess)
+            puts "Congrats, your guess matched at least one letter!"
+            @word.each_index do |index|
+                if guess == @word[index]
+                    @hint[index] = guess
+                end
+            end
+        else
+            puts "Sorry #{@guesser.name}, no matches"
+        end
+        @guesser.previous_guesses.push(guess)
     end
 
     def end_game
-        # maybe save all played games to some kind of log file
+        # TODO: maybe save all played games to some kind of log file
 
+        puts "The final score is #{@guesser.name}: #{@guesser.points} - #{@setter.name}: #{@setter.points}"
+        puts "Would you like to play again? (y/n)"
+        response = gets.chomp.downcase
+        if response == "y"
+            self.reset_game
+        else
+            exit(0)
+        end
     end
     
-
+    def reset_game
+        @setter = temp
+        @setter = @guesser
+        @guesser = temp
+        @guesses_remaining = 10
+    end
 end
-
-
 
 class Human
     
-    attr_accessor :name
+    attr_accessor :name, :points, :previous_guesses
 
     def set_word
         puts "#{@name}, what's your word?"
-        word = gets.chomp.downcase
+        word = gets.chomp.downcase.split(//)
         system("clear") || system("cls")
         word
+    end
+
+    def guess
+        puts "#{@name}, guess a letter or word"
+        gets.chomp.downcase
     end
 
     private
 
     def initialize(name)
         @name = name
+        @points = 0
+        @previous_guesses = Array.new
     end
 end
 
-
 class Computer
     
-    attr_accessor :name
+    attr_accessor :name, :points, :previous_guesses
 
     def set_word
         valid_words = @DICTIONARY.select {|word| word.length > 4 && word.length < 13}
-        valid_words[Random.rand(valid_words.length)].chomp.downcase
+        valid_words[Random.rand(valid_words.length)].chomp.downcase.split(//)
+    end
+
+    def guess
+         # TODO: let the CPU guess a word you set
+
+    # start by guessing from the most common English letters e-t-a-o-i-n 
+
+    # if you want to be a giant nerd have it then check what words from its dictionary are possible, then the most common letter from those words in the empty space
     end
 
     private
     
-    def initialize(parent)
+    def initialize
         # load the dictionary
         if File.exist?("google-10000-english-no-swears.txt")
             @DICTIONARY = File.open("google-10000-english-no-swears.txt").readlines
         else
             puts "Dictionary is missing"
         end
-        @parent = parent
         @name = "CPU"
+        @points = 0
+        @previous_guesses = Array.new
     end
-
-
-
-    # let the CPU guess a word you set
-
-    # start by guessing from the most common English letters e-t-a-o-i-n-s-h-r-d-l-u 
-
-    # if you want to be a giant nerd have it then check what words from its dictionary abre possible, then the most common letter from those words in the empty space
-
 end
 
 game = Hangman.new
