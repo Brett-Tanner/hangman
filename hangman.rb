@@ -1,8 +1,13 @@
+require 'yaml'
+
 class Hangman
 
     private
     
     def initialize
+        if File.exist("saves/*") # TODO: this will need to change order a lot
+            self.from_yaml(file)
+        end
         @guesses_remaining = 10
         @setter = nil
         @guesser = nil
@@ -44,7 +49,9 @@ class Hangman
         
         guess = @guesser.guess
 
-        if @guesser.previous_guesses.any?(guess)
+        if guess == "save"
+            self.to_yaml
+        elsif @guesser.previous_guesses.any?(guess)
             puts "You've already guessed that!"
             return self.guess
         elsif guess.length > 1
@@ -68,6 +75,25 @@ class Hangman
         end
         @setter.points += 1
         self.guess
+    end
+
+    def to_yaml # TODO: find out if this saves the complete player with all its contents. Also I don't think this makes a file yet
+        YAML.dump ({
+            :guesses_remaining => @guesses_remaining
+            :setter => @setter
+            :guesser => @guesser
+            :word => @word
+            :hint => @hint
+        })
+    end
+
+    def self.from_yaml(file)
+        save_file = YAML.load(file)
+        @guesses_remaining = save_file[:guesses_remaining]
+        @setter = save_file[:setter]
+        @guesser = save_file[:guesser]
+        @word = save_file[:word]
+        @hint = save_file[:hint]
     end
 
     def word_guess(guess)
@@ -96,8 +122,6 @@ class Hangman
     end
 
     def end_game
-        # TODO: maybe save all played games to some kind of log file
-
         puts "The final score is #{@guesser.name}: #{@guesser.points} - #{@setter.name}: #{@setter.points}"
         puts "Would you like to play again? (y/n)"
         response = gets.chomp.downcase
@@ -128,7 +152,7 @@ class Human
     end
 
     def guess
-        puts "#{@name}, guess a letter or word"
+        puts "#{@name}, guess a letter or word (or enter 'save' to save the game"
         gets.chomp.downcase
     end
 
