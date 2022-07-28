@@ -5,15 +5,17 @@ class Hangman
     private
     
     def initialize
-        if File.exist("saves/*") # TODO: this will need to change order a lot
-            self.from_yaml(file)
+        @save = "save.yaml"
+        if File.exists?(@save)
+            self.from_yaml
+        else
+            @guesses_remaining = 10
+            @setter = nil
+            @guesser = nil
+            2.times {|i| self.create_player}
+            @word = @setter.set_word
+            @hint = Array.new(@word.length, " _ ")
         end
-        @guesses_remaining = 10
-        @setter = nil
-        @guesser = nil
-        2.times {|i| self.create_player}
-        @word = @setter.set_word
-        @hint = Array.new(@word.length, " _ ")
         self.guess
     end
 
@@ -51,6 +53,8 @@ class Hangman
 
         if guess == "save"
             self.to_yaml
+            puts "Game save successfully!"
+            exit(0)
         elsif @guesser.previous_guesses.any?(guess)
             puts "You've already guessed that!"
             return self.guess
@@ -60,45 +64,47 @@ class Hangman
             self.letter_guess(guess)
         end
 
-
-        # TODO: if the player enters "save" as their guess, save gamestate info to a file
-            # guesses remaining, current revealed letters, previous guesses, player name
-
         @guesses_remaining -= 1
-        puts "#{@guesses_remaining} guesses remaining"
-        if @guesses_remaining <= 0 
-            puts "Bad luck #{@guesser.name}, the word was #{@word.join}"
-            self.end_game 
-        elsif @word == @hint
-            "Congratulations #{@setter.name}, you win!"
+        if @word == @hint
+            "Congratulations #{@guesser.name}, you win!"
+            @guesser.points += @guesses_remaining
             return self.end_game
+        elsif @guesses_remaining <= 0 
+            puts "Bad luck #{@guesser.name}, the word was #{@word.join}"
+            return self.end_game 
         end
+        puts "#{@guesses_remaining} guesses remaining"
         @setter.points += 1
         self.guess
     end
 
-    def to_yaml # TODO: find out if this saves the complete player with all its contents. Also I don't think this makes a file yet
-        YAML.dump ({
-            :guesses_remaining => @guesses_remaining
-            :setter => @setter
-            :guesser => @guesser
-            :word => @word
-            :hint => @hint
+    def to_yaml
+        save_state = YAML.dump ({
+            :guesses_remaining => @guesses_remaining,
+            :setter => @setter,
+            :guesser => @guesser,
+            :word => @word,
+            :hint => @hint,
         })
+        save_file = File.open(@save, "w")
+        save_file.puts "#{save_state}"
     end
 
-    def self.from_yaml(file)
-        save_file = YAML.load(file)
-        @guesses_remaining = save_file[:guesses_remaining]
-        @setter = save_file[:setter]
-        @guesser = save_file[:guesser]
-        @word = save_file[:word]
-        @hint = save_file[:hint]
+    def from_yaml
+        save_file = File.open(@save)
+        save_state = YAML.unsafe_load(save_file)
+        File.delete(@save)
+        @guesses_remaining = save_state[:guesses_remaining]
+        @setter = save_state[:setter]
+        @guesser = save_state[:guesser]
+        @word = save_state[:word]
+        @hint = save_state[:hint]
     end
 
     def word_guess(guess)
         if guess == @word.join
-            puts "Congratulations #{@setter.name}, you win!"
+            puts "Congratulations #{@guesser.name}, you win!"
+            @guesser.points += @guesses_remaining
             return self.end_game
         else
             puts "Sorry #{@guesser.name}, your guess was incorrect"
@@ -133,10 +139,16 @@ class Hangman
     end
     
     def reset_game
-        @setter = temp
-        @setter = @guesser
-        @guesser = temp
+        @guesser.previous_guesses.clear
+        if @setter.name != "CPU" && @guesser.name != "CPU"
+            temp = @setter
+            @setter = @guesser
+            @guesser = temp
+        end
         @guesses_remaining = 10
+        @word = @setter.set_word
+        @hint = Array.new(@word.length, " _ ")
+        self.guess
     end
 end
 
@@ -152,7 +164,7 @@ class Human
     end
 
     def guess
-        puts "#{@name}, guess a letter or word (or enter 'save' to save the game"
+        puts "#{@name}, guess a letter or word (or enter 'save' to save the game)"
         gets.chomp.downcase
     end
 
@@ -174,18 +186,9 @@ class Computer
         valid_words[Random.rand(valid_words.length)].chomp.downcase.split(//)
     end
 
-    def guess
-         # TODO: let the CPU guess a word you set
-
-    # start by guessing from the most common English letters e-t-a-o-i-n 
-
-    # if you want to be a giant nerd have it then check what words from its dictionary are possible, then the most common letter from those words in the empty space
-    end
-
     private
     
     def initialize
-        # load the dictionary
         if File.exist?("google-10000-english-no-swears.txt")
             @DICTIONARY = File.open("google-10000-english-no-swears.txt").readlines
         else
