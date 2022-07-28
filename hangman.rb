@@ -53,7 +53,7 @@ class Hangman
 
         if guess == "save"
             self.to_yaml
-            puts "Game save successfully!"
+            puts "Game saved successfully!"
             exit(0)
         elsif @guesser.previous_guesses.any?(guess)
             puts "You've already guessed that!"
