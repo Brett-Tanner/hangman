@@ -2,6 +2,8 @@ require 'yaml'
 
 class Hangman
 
+    attr_accessor :guesses_remaining, :hint
+
     private
     
     def initialize
@@ -31,7 +33,7 @@ class Hangman
         end
 
         if name == "Cpu"
-            player = Computer.new
+            player = Computer.new(self)
         else
             player = Human.new(name)
         end
@@ -156,7 +158,7 @@ class Human
     
     attr_accessor :name, :points, :previous_guesses
 
-    def set_word
+    def set_word # TODO: stop people setting numbers
         puts "#{@name}, what's your word?"
         word = gets.chomp.downcase.split(//)
         system("clear") || system("cls")
@@ -186,17 +188,38 @@ class Computer
         valid_words[Random.rand(valid_words.length)].chomp.downcase.split(//)
     end
 
+    def guess
+        if @parent.guesses_remaining >= 10
+            @valid_guesses = @DICTIONARY.select {|word| word.length == @parent.hint.length}
+        end
+        if @parent.hint.all?(" _ ")
+            @COMMON_LETTERS[@parent.guesses_remaining]
+        else
+            # TODO: need to store the index here as well I think
+            visible_hints = @parent.hint.
+            @valid_guesses = @valid_guesses.select {|guess| self.match_hint?(guess, visible_hints)}
+            @valid_guesses[Random.rand(@valid_guesses.length)] # not checked at all
+        end
+    end
+
     private
     
-    def initialize
+    def initialize(parent)
         if File.exist?("google-10000-english-no-swears.txt")
             @DICTIONARY = File.open("google-10000-english-no-swears.txt").readlines
         else
             puts "Dictionary is missing"
         end
+        @COMMON_LETTERS = %w[p u r h s n o i a t e]
         @name = "CPU"
         @points = 0
         @previous_guesses = Array.new
+        @parent = parent
+        @valid_guesses = Array.new
+    end
+
+    def match_hint?(guess, visible_hints)
+        # return true if it has the same letter as the hint at the same index
     end
 end
 
