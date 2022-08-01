@@ -193,11 +193,14 @@ class Computer
             @valid_guesses = @DICTIONARY.select {|word| word.length == @parent.hint.length}
         end
         if @parent.hint.all?(" _ ")
-            @COMMON_LETTERS[@parent.hint.length][@parent.guesses_remaining]
+            p @COMMON_LETTERS
+            p @parent.hint.length
+            p 10 - @parent.guesses_remaining
+            p @COMMON_LETTERS[@parent.hint.length][10 - @parent.guesses_remaining]
         else
             # TODO: need to store the index here as well I think
             # could i use pattern matching here???
-            visible_hints = @parent.hint.
+            visible_hints = @parent.hint
             @valid_guesses = @valid_guesses.select {|guess| self.match_hint?(guess, visible_hints)}
             @valid_guesses[Random.rand(@valid_guesses.length)] # not checked at all
         end
