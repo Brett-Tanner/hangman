@@ -193,16 +193,15 @@ class Computer
             @valid_guesses = @DICTIONARY.select {|word| word.length == @parent.hint.length}
         end
         if @parent.hint.all?(" _ ")
-            p @COMMON_LETTERS
-            p @parent.hint.length
-            p 10 - @parent.guesses_remaining
-            p @COMMON_LETTERS[@parent.hint.length][10 - @parent.guesses_remaining]
+            @COMMON_LETTERS[@parent.hint.length][10 - @parent.guesses_remaining]
         else
-            # TODO: need to store the index here as well I think
-            # could i use pattern matching here???
-            visible_hints = @parent.hint
-            @valid_guesses = @valid_guesses.select {|guess| self.match_hint?(guess, visible_hints)}
-            @valid_guesses[Random.rand(@valid_guesses.length)] # not checked at all
+            # change the visible hint to a regex
+            hint_string = @parent.hint.join
+            hint_pattern = "/#{hint_string.gsub(" _ ", ".")}/"
+            # TODO:find the words which match that regex
+
+            # find the most common letter among those and return it
+            
         end
     end
 
