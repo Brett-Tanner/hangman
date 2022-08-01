@@ -164,11 +164,15 @@ class Human
     
     attr_accessor :name, :points, :previous_guesses
 
-    def set_word # TODO: stop people setting numbers
+    def set_word
         puts "#{@name}, what's your word?"
-        word = gets.chomp.downcase.split(//)
+        word = gets.chomp.downcase
+        if /[0-9]/.match?(word)
+            puts "***You must set a word, not a number!***"
+            return self.set_word
+        end
         system("clear") || system("cls")
-        word
+        word.split(//)
     end
 
     def guess
