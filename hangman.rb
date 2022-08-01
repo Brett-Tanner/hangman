@@ -57,11 +57,17 @@ class Hangman
             self.to_yaml
             puts "Game saved successfully!"
             exit(0)
+        elsif guess == 1
+            puts "Sorry, I guess I don't know that word. I give up!"
+            # to end the game this turn while displaying messages/scores
+            @setter.points += @guesses_remaining
+            @guesses_remaining = 1
         elsif @guesser.previous_guesses.any?(guess)
             puts "You've already guessed that!"
             return self.guess
         elsif guess.length > 1
             self.word_guess(guess)
+        
         else
             self.letter_guess(guess)
         end
@@ -197,9 +203,15 @@ class Computer
         else
             # change the visible hint to a regex
             hint_string = @parent.hint.join
-            hint_pattern = "/#{hint_string.gsub(" _ ", ".")}/"
-            # TODO:find the words which match that regex
-
+            hint_regex = Regexp.new("#{hint_string.gsub(" _ ", ".")}")
+            p hint_regex
+            # TODO: find the words which match that regex
+            p @valid_guesses.length
+            @valid_guesses = @valid_guesses.select {|guess| guess.match?(hint_regex)} # FIXME: eliminates to 0 lol
+            p @valid_guesses.length
+            if @valid_guesses.length == 0
+                return 1
+            end
             # find the most common letter among those and return it
             
         end
