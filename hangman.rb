@@ -67,7 +67,6 @@ class Hangman
             return self.guess
         elsif guess.length > 1
             self.word_guess(guess)
-        
         else
             self.letter_guess(guess)
         end
@@ -130,7 +129,7 @@ class Hangman
                 end
             end
         else
-            puts "Sorry #{@guesser.name}, no matches"
+            puts "Sorry #{@guesser.name}, your guess of #{guess} had no matches"
         end
         @guesser.previous_guesses.push(guess)
     end
@@ -209,14 +208,12 @@ class Computer
             hint_string = @parent.hint.join
             hint_regex = Regexp.new("#{hint_string.gsub(" _ ", ".")}")
             p hint_regex
-            # TODO: find the words which match that regex
-            p @valid_guesses.length
-            @valid_guesses = @valid_guesses.select {|guess| guess.match?(hint_regex)} # FIXME: eliminates to 0 lol
-            p @valid_guesses.length
+            # find the words which match that regex
+            @valid_guesses = @valid_guesses.select {|guess| hint_regex.match?(guess)}
             if @valid_guesses.length == 0
-                return 1
+                return 1 # error code for IDK word
             end
-            # find the most common letter among those and return it
+            # TODO: find the most common letter among those and return it
             
         end
     end
@@ -225,7 +222,7 @@ class Computer
     
     def initialize(parent)
         if File.exist?("google-10000-english-no-swears.txt")
-            @DICTIONARY = File.open("google-10000-english-no-swears.txt").readlines
+            @DICTIONARY = File.open("google-10000-english-no-swears.txt").readlines(chomp: true)
         else
             puts "Dictionary is missing"
         end
@@ -236,10 +233,6 @@ class Computer
         @previous_guesses = Array.new
         @parent = parent
         @valid_guesses = Array.new
-    end
-
-    def match_hint?(guess, visible_hints)
-        # TODO: return true if it has the same letter as the hint at the same index
     end
 end
 
