@@ -193,9 +193,10 @@ class Computer
             @valid_guesses = @DICTIONARY.select {|word| word.length == @parent.hint.length}
         end
         if @parent.hint.all?(" _ ")
-            @COMMON_LETTERS[@parent.guesses_remaining]
+            @COMMON_LETTERS[@parent.hint.length][@parent.guesses_remaining]
         else
             # TODO: need to store the index here as well I think
+            # could i use pattern matching here???
             visible_hints = @parent.hint.
             @valid_guesses = @valid_guesses.select {|guess| self.match_hint?(guess, visible_hints)}
             @valid_guesses[Random.rand(@valid_guesses.length)] # not checked at all
@@ -210,7 +211,8 @@ class Computer
         else
             puts "Dictionary is missing"
         end
-        @COMMON_LETTERS = %w[p u r h s n o i a t e]
+        # most common letters by word length, guessing all of them guarantees at least one reveal
+        @COMMON_LETTERS = [[], %w[a i], %w[a o e i u m b h], %w[a e o i u y h b c k], %w[a e i o u y s b f], %w[s e a o i u y h], %w[e a i o u s y], %w[e i a o u s], %w[e i a o u], %w[e i a o u], %w[e i a o u], %w[e i a o d], %w[e i a o f], %w[i e o a], %w[i e o], %w[i e a], %w[i e h], %w[i e r], %w[i e a], %w[i e a], %w[i e],]
         @name = "CPU"
         @points = 0
         @previous_guesses = Array.new
@@ -219,7 +221,7 @@ class Computer
     end
 
     def match_hint?(guess, visible_hints)
-        # return true if it has the same letter as the hint at the same index
+        # TODO: return true if it has the same letter as the hint at the same index
     end
 end
 
