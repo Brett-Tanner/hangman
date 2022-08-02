@@ -61,7 +61,7 @@ class Hangman
             self.to_yaml
             puts "Game saved successfully!"
             exit(0)
-        elsif guess == 1
+        elsif guess == 1 # in case word isn't in our dictionary
             puts "Sorry, I guess I don't know that word. I give up!"
             # to end the game this turn while displaying messages/scores
             @setter.points += @guesses_remaining
@@ -76,6 +76,13 @@ class Hangman
         end
 
         @guesses_remaining -= 1
+        self.end_check
+        puts "#{@guesses_remaining} guesses remaining"
+        @setter.points += 1
+        self.guess
+    end
+
+    def end_check
         if @word == @hint
             "Congratulations #{@guesser.name}, you win!"
             @guesser.points += @guesses_remaining
@@ -84,9 +91,6 @@ class Hangman
             puts "Bad luck #{@guesser.name}, the word was #{@word.join}"
             return self.end_game 
         end
-        puts "#{@guesses_remaining} guesses remaining"
-        @setter.points += 1
-        self.guess
     end
 
     def to_yaml
@@ -206,23 +210,15 @@ class Computer
         if @parent.hint.all?(" _ ")
             @COMMON_LETTERS[@parent.hint.length][10 - @parent.guesses_remaining]
         else
-            # change the visible hint to a regex
-            hint_string = @parent.hint.join
-            hint_regex = Regexp.new("#{hint_string.gsub(" _ ", ".")}")
-            p hint_regex
-            # find the words which match that regex
-            @valid_guesses = @valid_guesses.select {|guess| hint_regex.match?(guess)}
-            if @valid_guesses.length == 0
+            self.narrow_possibilities
+            case @valid_guesses.length
+            when 0
                 return 1 # error code for IDK word
+            when 1
+                return @valid_guesses[0]
+            else
+                self.most_likely
             end
-            # find the most common letter among those and return it
-            letter_freq = Hash.new(0)
-            @valid_guesses.each do |guess|
-                guess.each_char {|letter| letter_freq[letter] += 1}
-            end
-            @previous_guesses.each {|guess| letter_freq.delete(guess)}
-            most_freq = letter_freq.max_by {|key, value| value}
-            most_freq[0]
         end
     end
 
@@ -241,6 +237,24 @@ class Computer
         @previous_guesses = Array.new
         @parent = parent
         @valid_guesses = Array.new
+    end
+
+    def narrow_possibilities
+        # change the visible hint to a regex
+        hint_string = @parent.hint.join
+        hint_regex = Regexp.new("#{hint_string.gsub(" _ ", ".")}")
+        # find the words which match that regex
+        @valid_guesses = @valid_guesses.select {|guess| hint_regex.match?(guess)}
+    end
+
+    def most_likely
+        letter_freq = Hash.new(0)
+        @valid_guesses.each do |guess|
+            guess.each_char {|letter| letter_freq[letter] += 1}
+        end
+        @previous_guesses.each {|guess| letter_freq.delete(guess)}
+        most_freq = letter_freq.max_by {|key, value| value}
+        most_freq[0]
     end
 end
 
