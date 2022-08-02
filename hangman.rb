@@ -50,6 +50,10 @@ class Hangman
 
     def guess
         puts "Hint: #{@hint.join}"
+
+        if @guesser.name == "CPU"
+            sleep(2)
+        end
         
         guess = @guesser.guess
 
@@ -147,11 +151,9 @@ class Hangman
     
     def reset_game
         @guesser.previous_guesses.clear
-        if @setter.name != "CPU" && @guesser.name != "CPU"
-            temp = @setter
-            @setter = @guesser
-            @guesser = temp
-        end
+        temp = @setter
+        @setter = @guesser
+        @guesser = temp
         @guesses_remaining = 10
         @word = @setter.set_word
         @hint = Array.new(@word.length, " _ ")
