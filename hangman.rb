@@ -213,8 +213,14 @@ class Computer
             if @valid_guesses.length == 0
                 return 1 # error code for IDK word
             end
-            # TODO: find the most common letter among those and return it
-            
+            # find the most common letter among those and return it
+            letter_freq = Hash.new(0)
+            @valid_guesses.each do |guess|
+                guess.each_char {|letter| letter_freq[letter] += 1}
+            end
+            @previous_guesses.each {|guess| letter_freq.delete(guess)}
+            most_freq = letter_freq.max_by {|key, value| value}
+            most_freq[0]
         end
     end
 
