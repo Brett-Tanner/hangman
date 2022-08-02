@@ -215,7 +215,7 @@ class Computer
             when 0
                 return 1 # error code for IDK word
             when 1
-                return @valid_guesses[0]
+                return @valid_guesses[0] unless @previous_guesses.include?(@valid_guesses[0]) 
             else
                 self.most_likely
             end
