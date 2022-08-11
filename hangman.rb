@@ -65,7 +65,6 @@ class Hangman
             puts "Sorry, I guess I don't know that word. I give up!"
             # to end the game this turn while displaying messages/scores
             @setter.points += @guesses_remaining
-            @guesses_remaining = 1
         elsif @guesser.previous_guesses.any?(guess)
             puts "You've already guessed that!"
             return self.guess
@@ -123,7 +122,12 @@ class Hangman
             return self.end_game
         else
             puts "Sorry #{@guesser.name}, your guess was incorrect"
-            return self.guess
+            @guesses_remaining -= 1
+            return self.guess unless @guesser.name == "CPU"
+            puts "Sorry, I guess I don't know that word. I give up!"
+            # to end the game this turn while displaying messages/scores
+            @setter.points += @guesses_remaining
+            self.end_game
         end
         @guesser.previous_guesses.push(guess)
     end
