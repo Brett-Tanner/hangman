@@ -145,16 +145,20 @@ class Hangman
             puts "Sorry #{@guesser.name}, your guess of #{guess} had no matches"
         end
         @guesser.previous_guesses.push(guess)
+        puts "You've guessed #{@guesser.previous_guesses} so far"
     end
 
     def end_game
         puts "The final score is #{@guesser.name}: #{@guesser.points} - #{@setter.name}: #{@setter.points}"
         puts "Would you like to play again? (y/n)"
         response = gets.chomp.downcase
-        if response == "y"
+        if response == "n"
+            exit(0)
+        elsif response == "y"
             self.reset_game
         else
-            exit(0)
+            puts "***That's not a y or n***"
+            self.end_game
         end
     end
     
@@ -177,8 +181,8 @@ class Human
     def set_word
         puts "#{@name}, what's your word?"
         word = gets.chomp.downcase
-        if /[0-9]/.match?(word)
-            puts "***You must set a word, not a number!***"
+        if /[0-9 ]/.match?(word)
+            puts "***You can only use letters, with no spaces!***"
             return self.set_word
         end
         system("clear") || system("cls")
