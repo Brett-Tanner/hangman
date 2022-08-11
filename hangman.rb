@@ -65,6 +65,7 @@ class Hangman
             puts "Sorry, I guess I don't know that word. I give up!"
             # to end the game this turn while displaying messages/scores
             @setter.points += @guesses_remaining
+            @guesses_remaining = 1
         elsif @guesser.previous_guesses.any?(guess)
             puts "You've already guessed that!"
             return self.guess
@@ -219,7 +220,7 @@ class Computer
             when 0
                 return 1 # error code for IDK word
             when 1
-                return @valid_guesses[0] unless @previous_guesses.include?(@valid_guesses[0]) 
+                return @valid_guesses.shift unless @previous_guesses.include?(@valid_guesses[0]) 
             else
                 self.most_likely
             end
